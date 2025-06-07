@@ -1,3 +1,47 @@
+# MongoDB Guide 📘
+
+## 📑 Table of Contents
+
+- [📥 insert() & insertOne()](#-insert--insertone)
+- [🔍 find() & findOne()](#-find--findone)
+- [🎯 Field Filtering (Projection)](#-return-only-specific-fields-with-find)
+- [🔬 $project (Aggregation)](#-project-used-inside-aggregation)
+- [🔍 MongoDB Comparison Operators](#-mongodb-comparison-operators)
+- [🧪 Example Queries](#-example-queries)
+- [$in, $nin, and Implicit AND](#in-nin-implicit-and-condition)
+- [$and (Explicit)](#-and-explicit-and)
+- [$or (Either Condition)](#-or-either-condition)
+- [$exists, $type, $size](#-exists-type-size)
+- [$all](#-all)
+- [$elemMatch](#-elemmatch)
+- [$set](#-set)
+- [$addToSet](#-addtoset)
+- [$push](#-push)
+- [$unset](#-unset)
+- [$pop](#-pop)
+- [$pull](#-pull)
+- [$pullAll](#-pullall)
+- [🔸 Positional Operator `$`](#-what-is-the-positional-operator)
+- [🗑️ Delete Documents](#-delete-documents)
+- [🧨 Drop a Collection](#-2-drop-a-collection)
+- [🚀 What is the Aggregation Framework?](#-what-is-the-aggregation-framework)
+  - [$match – Filtering Documents](#-match--filtering-documents)
+  - [$project – Selecting or Transforming Fields](#project--selecting-or-transforming-fields)
+  - [$addFields](#-addfields--add-or-update-fields)
+  - [$out](#-out--save-aggregation-result-to-a-new-collection)
+  - [$merge](#-merge--save-aggregation-results-insert-or-update)
+  - [$group](#-group)
+  - [$unwind](#-unwind)
+  - [🧠 $$ROOT](#-what-is-root)
+  - [$bucket](#-bucket--group-documents-into-ranges-buckets)
+  - [$limit](#-limit--limit-number-of-documents)
+  - [$facet](#-what-is-facet)
+  - [$lookup – For Joining Collections](#-lookup--for-joining-collections)
+- [📦 Embedded vs Referenced Document](#embeddedd-document-vs-referencing-document)
+- [⚔️ COLLSCAN vs IXSCAN](#-collscan-vs-ixscan)
+- [📘 Compound Index](#-compound-index)
+- [🔤 Text Index](#-text-index)
+
 ## 📥 insert() & insertOne()
 
 ### 👉 insertOne() — insert a single document
@@ -120,7 +164,7 @@ db.test.find({ age: { $lte: 60 } });
 - $nin → match if a field's value is not in a list
 - Implicit $and condition
 
-### ### ### 🔹 $in — Value in a List
+### 🔹 $in — Value in a List
 
 ```bash
 db.test.find({ age: { $in: [25, 30, 35] } });
@@ -128,7 +172,7 @@ db.test.find({ age: { $in: [25, 30, 35] } });
 
 ✅ Matches documents where age is 25, 30, or \*\*35`.
 
-### ### ### 🔹 $nin — Value Not in a List
+### 🔹 $nin — Value Not in a List
 
 ```bash
 db.test.find({ age: { $nin: [18, 21] } });
@@ -396,7 +440,7 @@ Only Alice’s document matches because she has a skill object with name = "Java
 
 ## ✅ $set
 
-### ### ### 🔹 Purpose:
+### 🔹 Purpose:
 
 Sets (creates or updates) the value of a field.
 
@@ -422,7 +466,7 @@ db.test.updateOne(
 
 ## ✅ $addToSet
 
-### ### ### 🔹 Purpose:
+### 🔹 Purpose:
 
 Adds a value to an array only if it doesn’t already exist. Prevents duplicates.
 
@@ -450,7 +494,7 @@ If not, it will be added.
 
 ## ✅ $push
 
-### ### ### 🔹 Purpose:
+### 🔹 Purpose:
 
 Appends a value to an array (duplicates allowed).
 
@@ -725,6 +769,600 @@ db.users.drop()
 
 `The Aggregation Framework allows you to process data records and return computed results. It works like a pipeline — data flows through stages, and each stage transforms the data.`
 
+## 🔍 $match – Filtering Documents
+
+### ✅ Purpose:
+
+Filters the documents just like the .find() method, but as a stage in the pipeline.
+
+📘 Syntax:
+
+```bash
+{ $match: { field: value } }
+```
+
+📌 Example:
+
+```bash
+db.users.aggregate([
+  { $match: { age: { $gte: 18 } } }
+])
+```
+
+✅ This filters and returns only documents where age is 18 or above.
+
+🧱 $project – Selecting or Transforming Fields
+
+✅ Purpose:
+
+- Include or exclude fields
+- Rename fields
+- Add computed fields
+- Reshape documents
+
+📘 Syntax:
+
+```bash
+{ $project: { field1: 1, field2: 1, _id: 0 } }
+# 1 = include, 0 = exclude
+
+```
+
+📌 Example:
+
+```bash
+db.users.aggregate([
+  { $project: { name: 1, age: 1, _id: 0 } }
+])
+```
+
+✅ This will return only name and age fields, excluding \_id.
+
+🤝 Using $match and $project together
+
+```bash
+db.users.aggregate([
+  { $match: { age: { $gte: 18 } } },
+  { $project: { name: 1, age: 1, email: 1, _id: 0 } }
+])
+```
+
+✅ Output: Only adult users, showing their name, age, and email.
+
+## 🧩 $addFields — Add or Update Fields
+
+### ✅ Purpose:
+
+Adds new fields or updates existing ones without removing any other fields.
+
+📘 Syntax:
+
+```bash
+{ $addFields: { newField: <expression> } }
+```
+
+📌 Example:
+
+```bash
+db.users.aggregate([
+  {
+    $addFields: {
+      fullName: { $concat: ["$name.firstName", " ", "$name.lastName"] }
+    }
+  }
+])
+```
+
+✅ Adds a new fullName field by combining first and last names.
+
+## 📤 $out — Save Aggregation Result to a New Collection
+
+### ✅ Purpose:
+
+Writes the final output of the aggregation to a new collection, replacing the old one if it exists.
+
+### ⚠️ Note: This ends the pipeline, so it must be the last stage.
+
+📘 Syntax:
+
+```bash
+{ $out: "newCollectionName" }
+```
+
+📌 Example:
+
+```bash
+db.users.aggregate([
+  { $match: { age: { $gte: 18 } } },
+  { $out: "adults" }
+])
+```
+
+✅ Creates a new collection called adults with only users aged 18+.
+
+## 🔀 $merge — Save Aggregation Results (Insert or Update)
+
+### ✅ Purpose:
+
+Writes the output of the pipeline to a target collection, with flexible options:
+
+- Insert new documents
+- Merge (update) existing documents
+- Replace existing documents
+
+📘 Syntax:
+
+```bash
+{
+  $merge: {
+    into: "targetCollection",
+    on: "_id",
+    whenMatched: "merge",    // or "replace", "fail", "keepExisting"
+    whenNotMatched: "insert" // or "discard", "fail"
+  }
+}
+```
+
+📌 Example:
+
+```bash
+db.users.aggregate([
+  { $match: { age: { $gte: 18 } } },
+  {
+    $merge: {
+      into: "adults",
+      on: "_id",  #optional
+      whenMatched: "merge", #optional
+      whenNotMatched: "insert" #optional
+    }
+  }
+])
+# you can write like this
+db.users.aggregate([
+  { $match: { age: { $gte: 18 } } },
+  {
+    $merge: "adults"
+  }
+])
+```
+
+✅ Updates or inserts records into the adults collection.
+
+🆚 $out vs $merge
+| Feature            | `$out`                |`$merge` |
+| ------------------ | ---------------------- | --------------------------------------- |
+| Replaces data | Yes (whole collection) | No (updates or inserts individual docs) |
+| Overwrites safely | No | Yes (custom merge rules) |
+| Must be last stage | ✅ | ✅ |
+
+## 🔁 $group
+
+The $group stage is used to group documents by a specific field and apply aggregation operations like $sum, $avg, $push, etc.
+
+📌 Syntax:
+
+```bash
+{
+  $group: {
+    _id: "$fieldName",  // group by this field
+    resultField: { aggregationOperator: "$anotherField" }
+  }
+}
+```
+
+## 💯 $sum
+
+$sum is used to calculate the total of a numeric field within each group.
+
+📘 Example: Total salary by company
+
+```bash
+
+db.users.aggregate([
+  {
+    $group: {
+      _id: "$company",
+      totalSalary: { $sum: "$salary" }
+    }
+  }
+])
+
+```
+
+👆 This groups all users by company and sums their salary.
+
+## 📥 $push
+
+$push is used to create an array of values (from a field) in each group.
+
+📘 Example: List of names by city
+
+```bash
+db.users.aggregate([
+  {
+    $group: {
+      _id: "$address.city",
+      people: { $push: "$name.firstName" }
+    }
+  }
+])
+```
+
+👆 This creates an array of all first names for each city.
+
+### 🧠 Full Example
+
+### 🎯 Task: Group users by course and:
+
+- Count total students in each course
+- Collect all emails in that course
+
+```bash
+db.users.aggregate([
+  {
+    $group: {
+      _id: "$course",
+      totalStudents: { $sum: 1 },
+      emails: { $push: "$email" }
+    }
+  }
+])
+```
+
+🧾 Result:
+
+```bash
+{
+  "_id": "level-2",
+  "totalStudents": 5,
+  "emails": [
+    "ali@mail.com",
+    "sakib@mail.com",
+    "nodi@mail.com"
+  ]
+}
+```
+
+# 🧩 MongoDB Aggregation: `$group` with `$unwind`
+
+## 🔄 `$unwind`
+
+The `$unwind` stage is used to **deconstruct an array field** from the input documents and **output a document for each element** in the array.
+
+### 📌 Syntax
+
+```js
+{
+  $unwind: '$arrayField';
+}
+```
+
+## 🔁 `$group` + `$unwind`
+
+When combined with `$group`, `$unwind` is especially powerful for aggregating data from array fields.
+
+#### 📘 Example:
+
+Count how many people know each skill
+Assume each user document has a skills array like:
+
+```bash
+"skills": [
+  { "name": "JavaScript", "level": "Expert" },
+  { "name": "Python", "level": "Beginner" }
+]
+```
+
+#### 🛠 Query
+
+```bash
+db.users.aggregate([
+  { $unwind: "$skills" },
+  {
+    $group: {
+      _id: "$skills.name",
+      totalPeople: { $sum: 1 }
+    }
+  }
+])
+```
+
+✅ Output
+
+```bash
+[
+  { "_id": "JavaScript", "totalPeople": 20 },
+  { "_id": "Python", "totalPeople": 15 },
+  { "_id": "C#", "totalPeople": 8 }
+]
+```
+
+📌 This means 20 people have JavaScript as a skill, 15 know Python, etc.
+
+### 🎯 Real Example: From Your Dataset
+
+Let’s say you want to:
+
+- List how many people are currently learning each skill.
+- The skill status is stored as isLearning: true.
+
+Query
+
+```bash
+db.users.aggregate([
+{ $unwind: "$skills" },
+{ $match: { "skills.isLearning": true } },
+{
+$group: {
+_id: "$skills.name",
+totalLearning: { $sum: 1 }
+}
+}
+])
+```
+
+Output
+
+```bash
+[
+  { "_id": "C#", "totalLearning": 1 },
+  { "_id": "GO", "totalLearning": 2 }
+]
+```
+
+🧠 This tells you how many users are learning each skill.
+
+## 🧠 What is $$ROOT?
+
+It gives you access to the full document from within an aggregation stage.
+
+Useful when you want to preserve the full document while projecting, grouping, or transforming.
+
+📘 Example Use Case: `$group` to get the highest salary per company but keep the full document
+
+```bash
+db.users.aggregate([
+  {
+    $sort: { salary: -1 } # sort by salary descending
+  },
+  {
+    $group: {
+      _id: "$company",
+      topEarner: { $first: "$$ROOT" } # get full document of top earner
+    }
+  }
+])
+```
+
+#### 🧾 Output Example:
+
+```bash
+{
+  "_id": "Skipfire",
+  "topEarner": {
+    "_id": ObjectId("..."),
+    "name": { "firstName": "Mariele", "lastName": "Dangl" },
+    "salary": 363,
+    "company": "Skipfire",
+    ...
+  }
+}
+```
+
+## 🪣 $bucket — Group documents into ranges (buckets)
+
+### 📌 Purpose:
+
+Categorize documents based on a numeric field into defined ranges (like age groups, salary bands, etc.).
+
+📘 Syntax:
+
+```bash
+{
+  $bucket: {
+    groupBy: "$fieldName",   # Must be a number field
+    boundaries: [0, 20, 40, 60, 80],  # Ranges (start inclusive, end exclusive)
+    default: "Other",        # Optional: where unmatched values go
+    output: {
+      count: { $sum: 1 },
+      items: { $push: "$name" }
+    }
+  }
+}
+```
+
+🧠 Example:
+Group users by salary ranges:
+
+```bash
+db.users.aggregate([
+  {
+    $bucket: {
+      groupBy: "$salary",
+      boundaries: [0, 100, 300, 500],
+      default: "Other",
+      output: {
+        count: { $sum: 1 },
+        emails: { $push: "$email" }
+      }
+    }
+  }
+])
+```
+
+## 🔢 `$limit` — Limit number of documents
+
+### 📌 Purpose:
+
+Restrict output to a certain number of documents.
+
+📘 Syntax:
+
+```bash
+{ $limit: 5 }  # Only 5 documents will pass
+```
+
+#### 🧠 Example:
+
+Top 5 highest-paid users:
+
+```bash
+db.users.aggregate([
+  { $sort: { salary: -1 } },
+  { $limit: 5 }
+])
+```
+
+## 💡 What is $facet?
+
+`$facet` allows you to run multiple aggregation pipelines in parallel on the same input data and return all the results in a single document.
+
+#### 📌 Why use $facet?
+
+It’s useful when you:
+
+- Want to group, filter, and transform data in different ways at the same time.
+- Need to generate multiple views (e.g., statistics, summaries, paginated lists) from the same dataset in one go.
+
+📘 Syntax:
+
+```bash
+db.collection.aggregate([
+  {
+    $facet: {
+      output1: [ /* pipeline 1 */ ],
+      output2: [ /* pipeline 2 */ ],
+      ...
+    }
+  }
+])
+```
+
+#### 🧠 Example:
+
+🎯 Task: From a users collection:
+
+- Count how many users are Male and Female.
+- Get top 3 earners.
+- Group by course.
+
+```bash
+db.users.aggregate([
+  {
+    $facet: {
+      genderStats: [
+        { $group: { _id: "$gender", total: { $sum: 1 } } }
+      ],
+      topEarners: [
+        { $sort: { salary: -1 } },
+        { $limit: 3 },
+        { $project: { name: 1, salary: 1 } }
+      ],
+      byCourse: [
+        { $group: { _id: "$course", count: { $sum: 1 } } }
+      ]
+    }
+  }
+])
+```
+
+✅ Output example:
+
+```bash
+{
+  genderStats: [
+    { _id: "Male", total: 5 },
+    { _id: "Female", total: 3 }
+  ],
+  topEarners: [
+    { name: "Sakib", salary: 5000 },
+    { name: "Nodi", salary: 4500 },
+    ...
+  ],
+  byCourse: [
+    { _id: "Level-2", count: 6 },
+    { _id: "Level-1", count: 2 }
+  ]
+}
+```
+
+🧾 Use cases:
+
+- Dashboard data (stats + charts)
+- E-commerce filters (brands + prices + ratings)
+- Blog analytics (top authors + most views + recent posts)
+
+## 🔍 $lookup – For Joining Collections
+
+In MongoDB, $lookup is used to perform joins between two collections — similar to SQL joins — even though MongoDB is a NoSQL database.
+
+### 📘 Syntax of $lookup
+
+```bash
+{
+  $lookup: {
+    from: "otherCollection",      # Collection to join with
+    localField: "fieldInThis",    # Field from the current collection
+    foreignField: "fieldInOther", # Field from the other collection
+    as: "outputArray"             # Name of the new field for matched data
+  }
+}
+```
+
+✅ Example:
+
+1.  orders Collection:
+
+```bash
+{
+  _id: 1,
+  customerId: "C123",
+  total: 200
+}
+```
+
+2. customers Collection:
+
+```bash
+{
+  _id: "C123",
+  name: "Ali Hossain",
+  email: "ali@example.com"
+}
+```
+
+Aggregation Query:
+
+```bash
+db.orders.aggregate([
+  {
+    $lookup: {
+      from: "customers",
+      localField: "customerId",
+      foreignField: "_id",
+      as: "customerInfo"
+    }
+  }
+])
+```
+
+🧾 Output:
+
+```bash
+{
+  _id: 1,
+  customerId: "C123",
+  total: 200,
+  customerInfo: [
+    {
+      _id: "C123",
+      name: "Ali Hossain",
+      email: "ali@example.com"
+    }
+  ]
+}
+```
+
 ### Embeddedd Document Vs Referencing Document
 
 Embeddedd
@@ -743,3 +1381,105 @@ Referencing
 - Big Data Size
 - Scalability
 - Flexibility
+
+## ⚔️ COLLSCAN vs IXSCAN
+
+| Feature        | `COLLSCAN`                           | `IXSCAN`                                  |
+| -------------- | ------------------------------------ | ----------------------------------------- |
+| Stands for     | Collection Scan                      | Index Scan                                |
+| How it works   | Checks **every document** one-by-one | Uses **index structure** to jump directly |
+| Performance    | Slow (linear search)                 | Fast (optimized search)                   |
+| When it occurs | No index is present for the query    | An index **matches the query**            |
+
+## 🧪 Example:
+
+### ❌ Without Index:
+
+```bash
+db.users.find({ age: 25 })
+```
+
+MongoDB will COLLSCAN the entire collection.
+
+✅ With Index:
+
+```bash
+db.users.createIndex({ age: 1 })
+db.users.find({ age: 25 })
+```
+
+Now MongoDB will do an IXSCAN — fast!
+
+### 🔍 Check Query Plan:
+
+To see how MongoDB executes a query:
+
+```bash
+db.users.find({ age: 25 }).explain("executionStats")
+```
+
+You will see either:
+
+- "stage": "COLLSCAN" → No index used
+- "stage": "IXSCAN" → Index used
+
+## 📘 Compound Index
+
+A compound index is an index on multiple fields in a document.
+
+### 📌 Syntax:
+
+```bash
+db.collection.createIndex({ field1: 1, field2: -1 })
+# 1 means ascending
+# -1 means descending
+```
+
+✅ Example:
+
+```bash
+db.users.createIndex({ age: 1, name: 1 })
+```
+
+This index will help speed up queries like:
+
+```bash
+db.users.find({ age: 25, name: "Sakib" })
+```
+
+#### 💡 Notes:
+
+- The order of fields matters in compound indexes.
+- This index can be used for queries that use the prefix of the fields (age, or age + name), but not just name alone.
+
+## 🔤 Text Index
+
+A text index allows you to perform full-text search on string content.
+
+### 📌 Syntax:
+
+```bash
+db.collection.createIndex({ field: "text" })
+```
+
+✅ Example:
+
+```bash
+db.articles.createIndex({ title: "text", body: "text" })
+```
+
+Then you can search like this:
+
+```bash
+db.articles.find({ $text: { $search: "mongodb indexing" } })
+```
+
+#### 🧠 Features:
+
+- Supports language-based stemming and stop words (e.g., ignores "the", "is").
+- Can search multiple fields with one text index.
+
+#### 🔐 Limitations:
+
+- Only one text index allowed per collection.
+- You cannot combine text search with some operators like $or directly.
