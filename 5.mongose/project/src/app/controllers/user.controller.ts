@@ -103,7 +103,7 @@ userRouter.patch("/update-user/:userId", async (req: Request, res: Response) => 
 userRouter.delete("/delete-user/:userId", async (req: Request, res: Response) => {
     const { userId } = req.params
 
-    const user = await User.findByIdAndDelete(userId)
+    const user = await User.findOneAndDelete({_id: userId})
 
     res.status(201).json({
         success: true,

@@ -2,6 +2,7 @@ import { Model, model, Schema } from "mongoose";
 import { IAddress, IUser, userInstanceMethods, userStaticMethods } from "../interfaces/user.interface";
 import validator from 'validator'
 import bcrypt from 'bcryptjs'
+import { Note } from "./notes.model";
 
 
 const addressSchema = new Schema<IAddress>({
@@ -79,14 +80,37 @@ userScema.static("hashPassword", async function hashPassword(password: string) {
     return hashPassword
 })
 
+//Document middleware
 userScema.pre("save", async function () {
 
     this.password = await bcrypt.hash(this.password, 10)
     // console.log("inside pre save hock", this)
+    
 })
 
 userScema.post("save", function () {
     console.log('user created. userId: %s ', this._id)
 })
+
+//Query middleware
+
+userScema.pre("find", function (next) {
+    console.log("indide pre find hock")
+    next()
+})
+// post middleware-এ next() লাগে না।
+userScema.post("findOneAndDelete", async function (doc) {
+    console.log("post hock running")
+    if (doc) {
+        await Note.deleteMany({ user: doc._id })
+    }
+})
+// যখন তুমি async function লেখো, তখন তা স্বয়ংক্রিয়ভাবে একটি Promise রিটার্ন করে।
+// Mongoose জানে:
+
+// "এই middleware Promise return করছে, তাই আমি await করে নিজে থেকে বুঝে নেব কখন কাজ শেষ হয়েছে।"
+
+// এজন্য তোমাকে আলাদা করে next() দিতে হয় না।
+
 
 export const User = model<IUser, userStaticMethods>("User", userScema)
