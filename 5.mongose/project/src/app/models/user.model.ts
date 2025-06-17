@@ -66,7 +66,9 @@ const userScema = new Schema<IUser, userStaticMethods, userInstanceMethods>({
 },
     {
         timestamps: true,
-        versionKey: false
+        versionKey: false,
+        toJSON: { virtuals: true },
+        toObject: { virtuals: true }
     }
 )
 
@@ -80,12 +82,16 @@ userScema.static("hashPassword", async function hashPassword(password: string) {
     return hashPassword
 })
 
+userScema.virtual('fullName').get(function () {
+    return `${this.firstName} ${this.lastName}`
+})
+
 //Document middleware
 userScema.pre("save", async function () {
 
     this.password = await bcrypt.hash(this.password, 10)
     // console.log("inside pre save hock", this)
-    
+
 })
 
 userScema.post("save", function () {
