@@ -27,14 +27,20 @@ userRouter.post('/create-user', async (req: Request, res: Response) => {
         // console.log(hashPassword)
         // body.password = hashPassword;
 
+        //  build in custom instance method
+        //     const user = new User(body)
+        //    const hashPassword = await user.hashPassword(body.password)
 
-        const user = new User(body)
-       const hashPassword = await user.hashPassword(body.password)
+        //    user.password = hashPassword;
+        //    console.log(hashPassword)
 
-       user.password = hashPassword;
-       console.log(hashPassword)
+        //     await user.save();
 
-        await user.save();
+        // built in and custom static method
+        const hashPassword = await User.hashPassword(body.password)
+        console.log(hashPassword)
+        body.password = hashPassword
+        const user = await User.create(body)
 
         res.status(201).json({
             success: true,
@@ -42,7 +48,7 @@ userRouter.post('/create-user', async (req: Request, res: Response) => {
             data: user
         })
 
-        
+
     } catch (error: any) {
         console.log(error)
 
