@@ -79,4 +79,14 @@ userScema.static("hashPassword", async function hashPassword(password: string) {
     return hashPassword
 })
 
+userScema.pre("save", async function () {
+
+    this.password = await bcrypt.hash(this.password, 10)
+    // console.log("inside pre save hock", this)
+})
+
+userScema.post("save", function () {
+    console.log('user created. userId: %s ', this._id)
+})
+
 export const User = model<IUser, userStaticMethods>("User", userScema)

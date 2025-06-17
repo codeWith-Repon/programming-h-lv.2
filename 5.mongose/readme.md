@@ -110,3 +110,12 @@ return `${this.firstName} ${this.lastName}`;
 - Works perfectly with Express.js
 - Supports promises, async/await
 - Connects easily to MongoDB Atlas or local databases
+
+## 🧩 Difference Between methods and statics
+
+| Feature    | `methods`                                 | `statics`                                             |
+| ---------- | ----------------------------------------- | ----------------------------------------------------- |
+| Belongs to | A single **document/instance**            | The whole **Model (collection)**                      |
+| Access     | Used on a **document** (`this = doc`)     | Used on the **Model** (`this = Model`)                |
+| Use Case   | For working with data in **one document** | For doing things like **custom queries or utilities** |
+| Example    | `user.getFullName()`                      | `User.findByEmail(email)`                             |
