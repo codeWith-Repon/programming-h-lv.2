@@ -40,7 +40,7 @@ userRouter.post('/create-user', async (req: Request, res: Response) => {
         // const hashPassword = await User.hashPassword(body.password)
         // console.log(hashPassword)
         // body.password = hashPassword
-        
+
         const user = await User.create(body)
 
         res.status(201).json({
@@ -62,12 +62,20 @@ userRouter.post('/create-user', async (req: Request, res: Response) => {
 })
 
 userRouter.get("/", async (req: Request, res: Response) => {
+    const { email } = req.query
+    const userEmail = email ? email : ""
 
-    const allUser = await User.find()
+    let users = []
+    if (userEmail) {
+        users = await User.find({ email: userEmail })
+    } else {
+        users = await User.find().sort( {"email": "asc"})
+    }
+
     res.status(201).json({
         success: true,
         message: "All user fetch succfully.",
-        data: allUser
+        data: users
     })
 })
 
@@ -103,7 +111,7 @@ userRouter.patch("/update-user/:userId", async (req: Request, res: Response) => 
 userRouter.delete("/delete-user/:userId", async (req: Request, res: Response) => {
     const { userId } = req.params
 
-    const user = await User.findOneAndDelete({_id: userId})
+    const user = await User.findOneAndDelete({ _id: userId })
 
     res.status(201).json({
         success: true,
