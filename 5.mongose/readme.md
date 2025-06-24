@@ -119,3 +119,8 @@ return `${this.firstName} ${this.lastName}`;
 | Access     | Used on a **document** (`this = doc`)     | Used on the **Model** (`this = Model`)                |
 | Use Case   | For working with data in **one document** | For doing things like **custom queries or utilities** |
 | Example    | `user.getFullName()`                      | `User.findByEmail(email)`                             |
+
+| Type                | Use When...                                                                                                                   | Example                  | In Mongoose      |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------ | ---------------- |
+| **Instance Method** | You already have a **document instance** and want to perform logic on **that specific document**.                             | `book.borrow(2)`         | `schema.methods` |
+| **Static Method**   | You only have the **Model** (not a document) and want to perform logic using **model-level operations** (e.g., find, update). | `Book.borrowBook(id, 2)` | `schema.statics` |
