@@ -7,7 +7,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   Form,
@@ -44,9 +43,8 @@ interface Props {
   open: boolean;
   taskToEdit?: ITask | null;
   onClose: () => void;
-  showTrigger?: boolean;
 }
-export function AddTaskModal({open, taskToEdit, onClose,showTrigger }: Props) {
+export function AddTaskModal({open, taskToEdit, onClose }: Props) {
 
   const form = useForm();
 
@@ -66,7 +64,7 @@ export function AddTaskModal({open, taskToEdit, onClose,showTrigger }: Props) {
       dispatch(addTask(data as ITask));
     }
     form.reset();
-    onClose?.();
+    onClose();
   };
 
   useEffect(() => {
@@ -77,12 +75,7 @@ export function AddTaskModal({open, taskToEdit, onClose,showTrigger }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      {showTrigger !==false && !taskToEdit && (
-        <DialogTrigger asChild>
-          <Button>Add Task</Button>
-        </DialogTrigger>
-      )}
-
+      
       <DialogContent className='sm:max-w-[425px]'>
         <DialogDescription className='sr-only'>
           Fill up this form to add task

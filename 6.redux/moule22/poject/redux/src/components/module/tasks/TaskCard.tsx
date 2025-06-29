@@ -59,7 +59,11 @@ const TaskCard = ({ task }: IProps) => {
           </Button>
           <Checkbox checked={task.isCompleted} onClick={toggleComplete} />
         </div>
-        <AddTaskModal showTrigger={false} open={!!editTask} taskToEdit={editTask} onClose={() => setEditTask(null)} />
+        <AddTaskModal
+          open={!!editTask}
+          taskToEdit={editTask}
+          onClose={() => setEditTask(null)}
+        />
       </div>
       <p className='mt-5'>{task.description}</p>
     </div>
