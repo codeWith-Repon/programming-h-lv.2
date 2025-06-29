@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { priorityOptions } from '@/constants/priorityOptions';
+import { priorityOptions } from '@/constants/options';
 import { cn } from '@/lib/utils';
 import { addTask, updateTask } from '@/redux/features/task/taskSlice';
 import { useAppDispatch } from '@/redux/hoock';

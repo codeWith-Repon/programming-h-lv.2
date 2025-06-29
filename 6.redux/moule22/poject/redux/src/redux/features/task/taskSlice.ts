@@ -6,6 +6,7 @@ interface InitialState {
     tasks: ITask[];
     filter: "all" | "high" | "medium" | "low"
 }
+export type Priority = "all" | "low" | "medium" | "high"
 
 const initialState: InitialState = {
     tasks: [
@@ -52,14 +53,28 @@ const taskSlice = createSlice({
         updateTask: (state, action: PayloadAction<ITask>) => {
             const taskIndex = state.tasks.findIndex(task => task.id === action.payload.id)
             state.tasks[taskIndex] = action.payload
+        },
+        updateFilter: (state, action: PayloadAction<Priority>) => {
+            state.filter = action.payload
         }
     }
 })
 
 export const selectTasks = (state: RootState) => {
-    return state.todo.tasks
+    const filter = state.todo.filter
+    if (filter === "low") {
+        return state.todo.tasks.filter((task) => task.priority === "low")
+    } else if (filter === "medium") {
+        return state.todo.tasks.filter((task) => task.priority === "medium")
+    }
+    else if (filter === "high") {
+        return state.todo.tasks.filter((task) => task.priority === "high")
+
+    } else {
+        return state.todo.tasks
+    }
 }
 
-export const { addTask, toggleCompleteState, deleteTask, updateTask } = taskSlice.actions
+export const { addTask, toggleCompleteState, deleteTask, updateTask, updateFilter } = taskSlice.actions
 
 export default taskSlice.reducer

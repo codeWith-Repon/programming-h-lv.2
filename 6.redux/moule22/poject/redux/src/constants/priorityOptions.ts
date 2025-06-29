@@ -1,1 +1,0 @@
-export const priorityOptions = ["Low", "Medium", "High"]
