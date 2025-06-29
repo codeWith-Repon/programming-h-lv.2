@@ -1,9 +1,7 @@
-
+import AddUserModal from '@/components/module/users/addUserModel';
 
 const User = () => {
-  return (
-    <div>Use</div>
-  )
-}
+  return <AddUserModal />;
+};
 
-export default User
+export default User;
