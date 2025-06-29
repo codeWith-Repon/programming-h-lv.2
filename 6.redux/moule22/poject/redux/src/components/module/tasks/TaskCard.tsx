@@ -1,14 +1,32 @@
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
+import {
+  deleteTask,
+  toggleCompleteState,
+} from '@/redux/features/task/taskSlice';
+import { useAppDispatch } from '@/redux/hoock';
 import type { ITask } from '@/types';
-import { Trash } from 'lucide-react';
+import { Edit, Trash } from 'lucide-react';
+import { useState } from 'react';
+import { AddTaskModal } from './addTaskModal';
 
 interface IProps {
   task: ITask;
 }
 
 const TaskCard = ({ task }: IProps) => {
+  const [editTask, setEditTask] = useState<ITask | null>(null);
+  const dispatch = useAppDispatch();
+
+  const toggleComplete = () => {
+    dispatch(toggleCompleteState(task.id));
+  };
+
+  const handleDelete = () => {
+    dispatch(deleteTask(task.id));
+  };
+
   return (
     <div className='border px-5 py-3 rounded-md'>
       <div className='flex justify-between items-center'>
@@ -20,14 +38,28 @@ const TaskCard = ({ task }: IProps) => {
               'bg-red-500': task.priority === 'high',
             })}
           ></div>
-          <h1>{task.title}</h1>
+          <h1 className={cn({ 'line-through': task.isCompleted })}>
+            {task.title}
+          </h1>
         </div>
         <div className='flex gap-3 items-center'>
-          <Button variant='link' className='p-0 text-red-500'>
+          <Button
+            onClick={() => setEditTask(task)}
+            variant='link'
+            className='p-0 text-green-500'
+          >
+            <Edit />
+          </Button>
+          <Button
+            onClick={handleDelete}
+            variant='link'
+            className='p-0 text-red-500'
+          >
             <Trash />
           </Button>
-          <Checkbox />
+          <Checkbox checked={task.isCompleted} onClick={toggleComplete} />
         </div>
+        <AddTaskModal showTrigger={false} open={!!editTask} taskToEdit={editTask} onClose={() => setEditTask(null)} />
       </div>
       <p className='mt-5'>{task.description}</p>
     </div>

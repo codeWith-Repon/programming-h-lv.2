@@ -32,34 +32,63 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { priorityOptions } from '@/constants/priorityOptions';
 import { cn } from '@/lib/utils';
-import { addTask } from '@/redux/features/task/taskSlice';
+import { addTask, updateTask } from '@/redux/features/task/taskSlice';
 import { useAppDispatch } from '@/redux/hoock';
 import type { ITask } from '@/types';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
+import { useEffect } from 'react';
 import { useForm, type FieldValues, type SubmitHandler } from 'react-hook-form';
 
-export function AddTaskModal() {
+interface Props {
+  open: boolean;
+  taskToEdit?: ITask | null;
+  onClose: () => void;
+  showTrigger?: boolean;
+}
+export function AddTaskModal({open, taskToEdit, onClose,showTrigger }: Props) {
+
   const form = useForm();
 
   const dispatch = useAppDispatch();
 
   const onSubmit: SubmitHandler<FieldValues> = (data) => {
     console.log(data);
-    dispatch(addTask(data as ITask));
+    if (taskToEdit) {
+      dispatch(
+        updateTask({
+          ...(data as ITask),
+          id: taskToEdit.id,
+          isCompleted: taskToEdit.isCompleted,
+        })
+      );
+    } else {
+      dispatch(addTask(data as ITask));
+    }
+    form.reset();
+    onClose?.();
   };
 
+  useEffect(() => {
+    if (taskToEdit) {
+      form.reset(taskToEdit);
+    }
+  }, [taskToEdit, form]);
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button>Add Task</Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onClose}>
+      {showTrigger !==false && !taskToEdit && (
+        <DialogTrigger asChild>
+          <Button>Add Task</Button>
+        </DialogTrigger>
+      )}
+
       <DialogContent className='sm:max-w-[425px]'>
         <DialogDescription className='sr-only'>
           Fill up this form to add task
         </DialogDescription>
         <DialogHeader>
-          <DialogTitle>Add Task</DialogTitle>
+          <DialogTitle>{taskToEdit ? 'Edit Task' : 'Add Task'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -160,7 +189,9 @@ export function AddTaskModal() {
               )}
             />
             <DialogFooter>
-              <Button type='submit'>Save changes</Button>
+              <Button type='submit'>
+                {taskToEdit ? 'Edit Task' : 'Add Task'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
