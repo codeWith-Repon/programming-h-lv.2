@@ -5,11 +5,12 @@ import {
   deleteTask,
   toggleCompleteState,
 } from '@/redux/features/task/taskSlice';
-import { useAppDispatch } from '@/redux/hoock';
+import { useAppDispatch, useAppSelector } from '@/redux/hoock';
 import type { ITask } from '@/types';
 import { Edit, Trash } from 'lucide-react';
 import { useState } from 'react';
 import { AddTaskModal } from './addTaskModal';
+import { selectUser } from '@/redux/features/user/userSlice';
 
 interface IProps {
   task: ITask;
@@ -18,7 +19,7 @@ interface IProps {
 const TaskCard = ({ task }: IProps) => {
   const [editTask, setEditTask] = useState<ITask | null>(null);
   const dispatch = useAppDispatch();
-
+  const userSelector = useAppSelector(selectUser);
   const toggleComplete = () => {
     dispatch(toggleCompleteState(task.id));
   };
@@ -26,6 +27,8 @@ const TaskCard = ({ task }: IProps) => {
   const handleDelete = () => {
     dispatch(deleteTask(task.id));
   };
+
+  const assignedUser = userSelector.find((user) => user.id == task.assignedTo);
 
   return (
     <div className='border px-5 py-3 rounded-md'>
@@ -65,6 +68,7 @@ const TaskCard = ({ task }: IProps) => {
           onClose={() => setEditTask(null)}
         />
       </div>
+      <p>Assigned To: {assignedUser ? assignedUser.name : 'Not assigned'}</p>
       <p className='mt-5'>{task.description}</p>
     </div>
   );
