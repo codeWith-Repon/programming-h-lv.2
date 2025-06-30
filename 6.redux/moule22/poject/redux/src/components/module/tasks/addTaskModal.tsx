@@ -47,7 +47,7 @@ interface Props {
 export function AddTaskModal({ open, taskToEdit, onClose }: Props) {
   const form = useForm();
 
-  const [createTask, { data, isLoading, isError }] = useCreateTaskMutation();
+  const [createTask, { data }] = useCreateTaskMutation();
 
   console.log('outside function', 'data:', data);
 
