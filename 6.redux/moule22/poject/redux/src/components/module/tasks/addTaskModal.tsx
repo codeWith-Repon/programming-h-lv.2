@@ -31,6 +31,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { priorityOptions } from '@/constants/options';
 import { cn } from '@/lib/utils';
+import { useCreateTaskMutation } from '@/redux/api/baseApi';
 
 import type { ITask } from '@/types';
 import { format } from 'date-fns';
@@ -46,9 +47,21 @@ interface Props {
 export function AddTaskModal({ open, taskToEdit, onClose }: Props) {
   const form = useForm();
 
- 
-  const onSubmit: SubmitHandler<FieldValues> = () => {
-   
+  const [createTask, { data, isLoading, isError }] = useCreateTaskMutation();
+
+  console.log('outside function', 'data:', data);
+
+  const onSubmit: SubmitHandler<FieldValues> = async (data) => {
+    const taskData = {
+      ...data,
+      isCompleted: false,
+    };
+
+    const res = await createTask(taskData).unwrap();
+    console.log('Inside submit function', res);
+
+    form.reset();
+    onClose();
   };
 
   useEffect(() => {
@@ -142,9 +155,7 @@ export function AddTaskModal({ open, taskToEdit, onClose }: Props) {
                         <SelectValue placeholder='Select a user' />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      
-                    </SelectContent>
+                    <SelectContent></SelectContent>
                   </Select>
                 </FormItem>
               )}
