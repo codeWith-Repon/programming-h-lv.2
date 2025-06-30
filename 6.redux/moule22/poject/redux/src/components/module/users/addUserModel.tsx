@@ -17,22 +17,18 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 
-import { useForm, type FieldValues } from 'react-hook-form';
-import { useAppDispatch } from '@/redux/hoock';
-import { addUser } from '@/redux/features/user/userSlice';
+import { useForm } from 'react-hook-form';
+
+
 import { useState } from 'react';
-import type { IUser } from '@/types';
 
 const AddUserModal = () => {
   const [open, setOpen] = useState(false);
   const form = useForm();
-  const dispatch = useAppDispatch();
 
-  const onSubmit = (data: FieldValues) => {
-    dispatch(addUser(data as IUser));
-    console.log(data)
-    form.reset();
-    setOpen(false);
+
+  const onSubmit = () => {
+    
   };
 
   return (

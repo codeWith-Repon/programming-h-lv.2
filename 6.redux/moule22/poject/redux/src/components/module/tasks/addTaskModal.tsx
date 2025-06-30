@@ -31,9 +31,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { priorityOptions } from '@/constants/options';
 import { cn } from '@/lib/utils';
-import { addTask, updateTask } from '@/redux/features/task/taskSlice';
-import { selectUser } from '@/redux/features/user/userSlice';
-import { useAppDispatch, useAppSelector } from '@/redux/hoock';
+
 import type { ITask } from '@/types';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
@@ -48,24 +46,9 @@ interface Props {
 export function AddTaskModal({ open, taskToEdit, onClose }: Props) {
   const form = useForm();
 
-  const dispatch = useAppDispatch();
-  const users = useAppSelector(selectUser);
-
-  const onSubmit: SubmitHandler<FieldValues> = (data) => {
-    console.log(data);
-    if (taskToEdit) {
-      dispatch(
-        updateTask({
-          ...(data as ITask),
-          id: taskToEdit.id,
-          isCompleted: taskToEdit.isCompleted,
-        })
-      );
-    } else {
-      dispatch(addTask(data as ITask));
-    }
-    form.reset();
-    onClose();
+ 
+  const onSubmit: SubmitHandler<FieldValues> = () => {
+   
   };
 
   useEffect(() => {
@@ -160,11 +143,7 @@ export function AddTaskModal({ open, taskToEdit, onClose }: Props) {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {users.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.name}
-                        </SelectItem>
-                      ))}
+                      
                     </SelectContent>
                   </Select>
                 </FormItem>
