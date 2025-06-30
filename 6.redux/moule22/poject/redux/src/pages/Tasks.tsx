@@ -11,7 +11,12 @@ import { useState } from 'react';
 
 const Tasks = () => {
   const [open, setSetOpen] = useState(false);
-  const { data, isLoading, isError } = useGetTasksQuery(undefined);
+  const { data, isLoading, isError } = useGetTasksQuery(undefined, {
+    pollingInterval: 30000,
+    refetchOnFocus: true,
+    refetchOnMountOrArgChange: true,
+    refetchOnReconnect: true,
+  });
 
   console.log({ data: data, isloading: isLoading, isError: isError });
 
