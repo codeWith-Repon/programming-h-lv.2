@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 import QueryBuilder from "./QueryBuilder";
+import cors from "cors"
 
 const app = express();
 
@@ -19,6 +20,19 @@ const taskSchema = new mongoose.Schema({
 const Task = mongoose.model("Task", taskSchema);
 
 app.use(express.json());
+app.use(cors({ origin: "http://localhost:5173" }))
+
+// app.use(cors({
+//   origin: (origin, callback) => {
+//     const allowedOrigins = ["http://localhost:5173"]; 
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error("Not allowed by CORS"));
+//     }
+//   },
+//   optionsSuccessStatus: 200,
+// }));
 
 app.get("/", (req, res) => {
   res.send("Hello programmer")
