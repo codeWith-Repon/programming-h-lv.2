@@ -287,7 +287,7 @@ db.test.find({
 
 Checks if a field exists or not
 
-### ### 🔹 Syntax:
+### 🔹 Syntax:
 
 ```bash
 db.collection.find({ field: { $exists: true } });
@@ -295,7 +295,7 @@ db.collection.find({ field: { $exists: true } });
 
 ✅ Returns documents that contain the field
 
-### ### 🔹 Example:
+### 🔹 Example:
 
 ➡️ Finds documents where email field exists
 
@@ -313,7 +313,7 @@ db.test.find({ age: { $exists: false } });
 
 Checks the BSON data type of a field
 
-### ### 🔹 Syntax:
+### 🔹 Syntax:
 
 ```bash
 db.collection.find({ field: { $type: "string" } });
@@ -327,7 +327,7 @@ db.collection.find({ field: { $type: "string" } });
 | `"array"`  | `[1, 2, 3]`       |
 | `"object"` | `{ name: "Ali" }` |
 
-### ### 🔹 Example:
+### 🔹 Example:
 
 ```bash
 db.test.find({ age: { $type: "string" } });
@@ -339,13 +339,13 @@ db.test.find({ age: { $type: "string" } });
 
 Matches arrays by their length
 
-### ### 🔹 Syntax:
+### 🔹 Syntax:
 
 ```bash
 db.collection.find({ arrayField: { $size: N } });
 ```
 
-### ### 🔹 Example:
+### 🔹 Example:
 
 ```bash
 db.test.find({ skills: { $size: 3 } });
@@ -535,7 +535,7 @@ db.test.updateOne(
 
 ## ✅ $unset
 
-### ### 🔹 Purpose:
+### 🔹 Purpose:
 
 Removes a field from the document.
 
@@ -561,7 +561,7 @@ db.test.updateOne(
 
 ## ✅ $pop
 
-### ### 🔹 Purpose:
+### 🔹 Purpose:
 
 Removes an element from the beginning or end of an array.
 
@@ -585,7 +585,7 @@ db.test.updateOne(
 
 ## ✅ $pull
 
-### ### 🔹 Purpose:
+### 🔹 Purpose:
 
 Removes specific elements from an array that match a condition or value.
 
@@ -622,7 +622,7 @@ db.test.updateOne(
 
 ## ✅ $pullAll
 
-### ### 🔹 Purpose:
+### 🔹 Purpose:
 
 Removes multiple specific values from an array at once (must match exactly).
 
@@ -693,10 +693,10 @@ Update: Use skills.$.level to change only that matched array element’s level.
 Feature Behavior
 
 - $ Only affects the first matching array element
-- $[] Updates all array elements (newer feature, called all positional operator)
-- $[<identifier>] Used with array filters for more advanced control
+- $[ ] Updates all array elements (newer feature, called all positional operator)
+- $[<identifier> ] Used with array filters for more advanced control
 
-### ### 🔹 Bonus: $[] – Update all items in an array
+### 🔹 Bonus: $[ ] – Update all items in an array
 
 ```bash
 db.test.updateOne(
@@ -706,6 +706,55 @@ db.test.updateOne(
 ```
 
 ✅ This sets isLearning: false for all skills items.
+
+### Sample Data
+
+```bash
+{
+  "name": "Sakib",
+  "skills": [
+    { "name": "Go", "level": "Beginner" },
+    { "name": "Python", "level": "Beginner" }
+  ]
+}
+```
+
+```json
+db.test.updateOne(
+  { name: "Sakib" },
+  [
+    { $set: {
+        skills: {
+          $map: {
+            input: "$skills",   // skills array এর প্রতিটি element নিয়ে কাজ করবে
+            as: "s",            // প্রতিটি element কে "s" নামে ধরবে
+            in: {
+              $cond: [
+                { $eq: ["$$s.name", "Python"] },   // যদি element.name Python হয়
+                { name: "$$s.name", level: "Expert" }, // level → Expert
+                "$$s"                              // নাহলে আগের element আগের মতো রাখবে
+              ]
+            }
+          }
+        }
+    }}
+  ]
+)
+
+```
+
+#### result
+
+```yaml
+{
+  'name': 'Sakib',
+  'skills':
+    [
+      { 'name': 'Go', 'level': 'Beginner' },
+      { 'name': 'Python', 'level': 'Expert' },
+    ],
+}
+```
 
 ## 🗑️ Delete Documents
 
@@ -1365,22 +1414,56 @@ db.orders.aggregate([
 
 ### Embeddedd Document Vs Referencing Document
 
-Embeddedd
+📌 Embedded Document (ডকুমেন্টের ভেতরে ডেটা রাখা)
 
-- One-to-One Relationships
+👉 ডেটা সরাসরি মূল ডকুমেন্টের ভেতরে রাখা হয়।
+
+কখন ব্যবহার করবে:
+
+- One-to-One Relationship
+
+  - যেমন: ইউজারের প্রোফাইল + অ্যাড্রেস একসাথে রাখা।
+
 - Frequent Reading Data
+
+  - একইসাথে ডেটা পড়তে হয় (join দরকার নেই)।
+
 - Atomic Updates
+
+  - একটা ডকুমেন্টের মধ্যে সব আপডেট একসাথে করা যায়।
+
 - Reduced Network Overhead
+
+  - একবারেই পুরো ডেটা পাওয়া যায়, আলাদা query লাগে না।
+
 - Small Data Size
 
-Referencing
+  - ডেটা ছোট হলে একসাথে রাখা সহজ।
 
-- One-to-Many Relationships
-- Many-to-Many
-- Frequent writing
+📌 Referencing Document (ডেটাকে আলাদা কালেকশনে রাখা এবং reference ব্যবহার করা)
+
+👉 এখানে আলাদা collection এ ডেটা রাখা হয়, আর ObjectId বা অন্য key দিয়ে সম্পর্ক তৈরি করা হয়।
+
+কখন ব্যবহার করবে:
+
+- One-to-Many Relationship
+
+  - যেমন: একজন ইউজারের অনেকগুলো অর্ডার।
+
+- Many-to-Many Relationship
+
+  - যেমন: ইউজার অনেক কোর্স এনরোল করতে পারে, আর কোর্সে অনেক ইউজার থাকতে পারে।
+
+- Frequent Writing
+
+  - আলাদা আলাদা অংশ বারবার আপডেট করতে হয়।
+
 - Big Data Size
-- Scalability
-- Flexibility
+
+  - ডেটা অনেক বড় হলে একসাথে রাখা অকার্যকর।
+
+- Scalability & Flexibility
+  - আলাদা কালেকশন হিসেবে বড় ডেটা ম্যানেজ করা সহজ।
 
 ## ⚔️ COLLSCAN vs IXSCAN
 
